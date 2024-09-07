@@ -1,6 +1,7 @@
 import axios, { isAxiosError } from "axios";
 import { enc, AES } from "crypto-js";
 import cityCode from "./cityCode.json";
+import Hashids from "hashids";
 export { cityCode };
 export enum ConsumesHistoryType {
   Week = "week",
@@ -625,5 +626,31 @@ export class BluedApi {
       console.warn("无法将解密后的数据转换为UTF-8字符串，返回十六进制字符串");
       return decrypted.toString(CryptoJS.enc.Hex);
     }
+  }
+
+  /**
+   * 加密uid
+   * @param uid 用户ID
+   * @returns
+   */
+  public static encryptUid(uid: string | number) {
+    const hashids = new Hashids("1766", 6);
+    const num = parseInt(uid.toString(), 10);
+    return hashids.encode(num);
+  }
+
+  /**
+   * 解密uid
+   * @param encryptedUid 加密的uid
+   * @returns
+   */
+  public static decryptUid(encryptedUid: string) {
+    const hashids = new Hashids("1766", 6);
+    let result = "";
+    const decoded = hashids.decode(encryptedUid);
+    for (let i = 0; i < decoded.length; i++) {
+      result += decoded[i].toString();
+    }
+    return Number(result);
   }
 }
