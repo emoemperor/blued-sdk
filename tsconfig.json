@@ -1,21 +1,17 @@
 {
-    "compilerOptions": {
-      "experimentalDecorators": true,
-      "target": "es6",
-      "module": "commonjs",
-      "resolveJsonModule": true,
-      "esModuleInterop": true,
-      "skipLibCheck": true,
-      "forceConsistentCasingInFileNames": true,
-      "rootDir": "./src",
-      "outDir": "./dist",
-      "noImplicitAny": false,
-      "declaration": false
-    },
-    "include": [
-      "src/**/*"
-    ],
-    "exclude": [
-      "./dist"
-    ]
-  }
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "target": "es6",
+    "module": "commonjs",
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "noImplicitAny": false,
+    "declaration": false
+  },
+  "include": ["src/**/*"],
+  "exclude": ["./dist"]
+}

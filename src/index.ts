@@ -18,6 +18,9 @@ import {
   BluedBalanceResponse,
 } from "./types";
 
+import cityCode from "./cityCode.json";
+
+export { cityCode };
 export class BluedApiUrl {
   /** 送礼物 */
   public static sendGift = "https://pay.blued.cn/buy/goods";
