@@ -10,7 +10,7 @@
     "rootDir": "./src",
     "outDir": "./dist",
     "noImplicitAny": false,
-    "declaration": false
+    "declaration": true
   },
   "include": ["src/**/*"],
   "exclude": ["./dist"]
