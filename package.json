@@ -1,6 +1,6 @@
 {
   "name": "blued-sdk",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Blued部分接口的node sdk",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
