@@ -583,12 +583,17 @@ export class BluedApi {
       .pop()}.m3u8`;
   }
 
-  public static decryptLivePlayUrl(encryptedUrl: string) {
+  /**
+   * 解密字符串
+   * @param encryptedStr 加密字符串
+   * @returns
+   */
+  public static decryptStr(encryptedStr: string) {
     const prefix = "4545";
     const key = enc.Base64.parse("MC8Lpxk9zqyuRPXMdO8rJQ==");
 
     // Base64解码
-    let decodedStr = enc.Base64.parse(encryptedUrl).toString(enc.Hex);
+    let decodedStr = enc.Base64.parse(encryptedStr).toString(enc.Hex);
 
     // 移除前缀
     if (decodedStr.startsWith(prefix)) {
