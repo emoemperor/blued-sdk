@@ -1,0 +1,32 @@
+{
+  "name": "blued-sdk",
+  "version": "1.0.0",
+  "description": "Blued部分接口的node sdk",
+  "main": "dist/index.js",
+  "repository": "git@github.com:emoemperor/blued-sdk.git",
+  "author": "emoemperor <github@emocat.icu>",
+  "license": "MIT",
+  "private": false,
+  "dependencies": {
+    "axios": "^1.7.7"
+  },
+  "devDependencies": {
+    "@types/axios": "^0.14.0",
+    "@types/node": "^22.5.4",
+    "typescript": "^4.2.2",
+    "eslint": "^7.20.0",
+    "@typescript-eslint/parser": "^4.15.1",
+    "@typescript-eslint/eslint-plugin": "^4.15.1",
+    "prettier": "^2.2.1",
+    "rimraf": "^3.0.2"
+  },
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint . --ext .ts",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "clean": "rimraf dist",
+    "prepare": "npm run build"
+  }
+}
