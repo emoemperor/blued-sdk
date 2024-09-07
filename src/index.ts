@@ -663,4 +663,58 @@ export class BluedApi {
     }
     return Number(result);
   }
+
+  /**
+   * 检查是否直播
+   * @param uid 用户ID
+   * @returns
+   */
+  public static async checkIsLive(uid: number | string) {
+    try {
+      const { data } = await axios.get<{ data?: { islive: boolean } }>(
+        `https://app.blued.cn/live/islive/${this.encryptUid(uid)}`
+      );
+      return data?.data?.islive;
+    } catch (error) {
+      console.error("Error checking if live:", error);
+      return false;
+    }
+  }
+
+  public static async getLiveInfoByUid(
+    uid: number | string
+  ): Promise<LiveInfoByUid | undefined> {
+    try {
+      const isLive = await this.checkIsLive(uid);
+      if (!isLive) return undefined;
+      const { data } = await axios.get(
+        `https://app.blued.cn/live?id=${this.encryptUid(uid)}`
+      );
+      const regex = new RegExp(
+        'decodeURIComponent\\(\\"(.*?)\\"\\)\\),window\\.Promise',
+        "s"
+      );
+      const match = regex.exec(data);
+      if (match && match[1]) {
+        // 对匹配到的字符串进行 URL 解码
+        const decodedStr = decodeURIComponent(match[1]);
+        // 将解码后的字符串解析为 JSON
+        const jsonData = JSON.parse(decodedStr);
+        if ("liveInfo" in jsonData) {
+          return jsonData.liveInfo;
+        } else {
+          return undefined;
+        }
+      }
+    } catch (error) {
+      console.error("Error parsing JSON:", error);
+      return undefined;
+    }
+  }
+}
+
+export interface LiveInfoByUid {
+  liveUrl: string;
+  picUrl: string;
+  initTime: string;
 }
