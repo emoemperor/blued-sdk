@@ -148,6 +148,7 @@ export class BluedApi {
           console.error("请求错误:", err.message);
           if (isAxiosError(err)) {
             console.error("响应数据:", err.response?.data);
+            return Promise.resolve(err.response);
           }
         }
         return Promise.reject(err);
