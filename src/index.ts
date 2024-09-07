@@ -1,4 +1,5 @@
 import axios, { isAxiosError } from "axios";
+import { enc, AES } from "crypto-js";
 import cityCode from "./cityCode.json";
 export { cityCode };
 export enum ConsumesHistoryType {
@@ -101,7 +102,12 @@ export interface BluedHotListResponse {
     lid: number;
     anchor: {
       name: string;
+      avatar: string;
     };
+    anchor_level: number;
+    live_play: string;
+    top_count: number;
+    realtime_count: number;
   }[];
 }
 export interface BluedMemberOfLiveResponse {
@@ -113,6 +119,31 @@ export interface BluedMemberOfLiveResponse {
 }
 export interface BluedBalanceResponse {
   data?: balanceData[];
+}
+
+export interface BluedFollowedListResponse {
+  data?: {
+    fan_club_level: number;
+    anchor: {
+      uid: number;
+      name: string;
+      avatar: string;
+    };
+    fan_club_name: string;
+    last_start_time: number;
+    in_fan_club: number;
+    live_play: string;
+    cover_box_url: string;
+    win_streak: number;
+    pic_url: string;
+    link_type: number;
+    notify: number;
+    cover_box_id: number;
+    live_type: number;
+    fans_status: number;
+    lid: number;
+    screen_pattern: number;
+  }[];
 }
 
 export class BluedApiUrl {
@@ -128,6 +159,13 @@ export class BluedApiUrl {
   public static leaveLive = "https://live.blued.cn/live/leave";
   /** 余额 */
   public static balance = `https://pay.blued.cn/sums/ios`;
+  /**
+   * 关注列表
+   * @param page 页数
+   * @returns
+   */
+  public static followedList = (page: number = 1) =>
+    `https://live.blued.cn/live/followed-list?page=${page}`;
   /**
    * 直播间在线用户
    * @param lid 直播间ID
@@ -250,6 +288,23 @@ export class BluedApi {
     );
   }
 
+  /**
+   * 获取关注列表
+   * @param page 页数
+   * @returns
+   */
+  async getFollowedList(page: number = 1) {
+    const { data } = await this._req.get<BluedFollowedListResponse>(
+      BluedApiUrl.followedList(page)
+    );
+    return data?.data;
+  }
+
+  /**
+   * 修改用户名
+   * @param current_uid 当前用户ID
+   * @param name 需要修改的用户名
+   */
   async editUsername(current_uid: string | number, name: string) {
     await this._req.put(BluedApiUrl.editUsername(current_uid), {
       name,
@@ -526,5 +581,44 @@ export class BluedApi {
     return `https://pili-live-hls.blued.cn/blued/${live_url
       .split("/")
       .pop()}.m3u8`;
+  }
+
+  public static decryptLivePlayUrl(encryptedUrl: string) {
+    const prefix = "4545";
+    const key = enc.Base64.parse("MC8Lpxk9zqyuRPXMdO8rJQ==");
+
+    // Base64解码
+    let decodedStr = enc.Base64.parse(encryptedUrl).toString(enc.Hex);
+
+    // 移除前缀
+    if (decodedStr.startsWith(prefix)) {
+      decodedStr = decodedStr.substring(prefix.length);
+    }
+
+    // 提取IV和加密数据
+    const offset = parseInt(prefix.charAt(0), 16);
+    const iv = enc.Hex.parse(decodedStr.substring(offset, offset + 32));
+    const encryptedData = enc.Hex.parse(
+      decodedStr.substring(0, offset) + decodedStr.substring(offset + 32)
+    );
+
+    // 解密
+    const decrypted = AES.decrypt(
+      { ciphertext: encryptedData } as CryptoJS.lib.CipherParams,
+      key,
+      {
+        iv: iv,
+        mode: CryptoJS.mode.CBC,
+        padding: CryptoJS.pad.Pkcs7,
+      }
+    );
+
+    // 尝试将解密后的数据转换为UTF-8字符串，如果失败则返回十六进制字符串
+    try {
+      return decrypted.toString(CryptoJS.enc.Utf8);
+    } catch (error) {
+      console.warn("无法将解密后的数据转换为UTF-8字符串，返回十六进制字符串");
+      return decrypted.toString(CryptoJS.enc.Hex);
+    }
   }
 }
