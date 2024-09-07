@@ -634,7 +634,12 @@ export class BluedApi {
    * @returns
    */
   public static encryptUid(uid: string | number) {
-    const hashids = new Hashids("1766", 6);
+    const hashids = new Hashids(
+      "1766",
+      6,
+      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ123567890",
+      "cfhistuCFHISTU"
+    );
     const num = parseInt(uid.toString(), 10);
     return hashids.encode(num);
   }
@@ -645,7 +650,12 @@ export class BluedApi {
    * @returns
    */
   public static decryptUid(encryptedUid: string) {
-    const hashids = new Hashids("1766", 6);
+    const hashids = new Hashids(
+      "1766",
+      6,
+      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ123567890",
+      "cfhistuCFHISTU"
+    );
     let result = "";
     const decoded = hashids.decode(encryptedUid);
     for (let i = 0; i < decoded.length; i++) {
