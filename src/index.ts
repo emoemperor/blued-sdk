@@ -141,7 +141,7 @@ export class BluedApiUrl {
    * @param current_uid 当前用户的uid
    * @returns
    */
-  public static editUsername = (current_uid: string) =>
+  public static editUsername = (current_uid: string | number) =>
     `https://argo.blued.cn/users/${current_uid}?http_method_override=PUT`;
   /***
    * 热门列表
@@ -153,7 +153,7 @@ export class BluedApiUrl {
    * @param current_uid 当前用户的uid
    * @returns
    */
-  public static checkBalance = (current_uid: string) =>
+  public static checkBalance = (current_uid: string | number) =>
     `https://social.blued.cn/users/${current_uid}/more/ios?v=2`;
   /**
    * 查看场次榜单
@@ -163,8 +163,8 @@ export class BluedApiUrl {
    * @returns
    */
   public static getLiveConsumes = (
-    uid: string,
-    lid: string,
+    uid: string | number,
+    lid: string | number,
     page: number = 1
   ) => `https://live.blued.cn/live/stars/${uid}/consumes/${lid}?page=${page}`;
   /**
@@ -176,8 +176,8 @@ export class BluedApiUrl {
    * @returns
    */
   public static getHistoryConsumes = (
-    uid: string,
-    lid: string,
+    uid: string | number,
+    lid: string | number,
     page: number = 1,
     type: ConsumesHistoryType = ConsumesHistoryType.Week
   ) =>
@@ -187,14 +187,14 @@ export class BluedApiUrl {
    * @param lid 直播间ID
    * @returns
    */
-  public static syncChat = (lid: string) =>
+  public static syncChat = (lid: string | number) =>
     `https://live.blued.cn/live/sync/chat?lid=${lid}`;
   /**
    * 礼物列表
    * @param uid 主播ID
    * @returns
    */
-  public static goodsList = (uid: string) =>
+  public static goodsList = (uid: string | number) =>
     `https://pay.blued.cn/goods?anchor=${uid}`;
 }
 
@@ -250,7 +250,7 @@ export class BluedApi {
     );
   }
 
-  async editUsername(current_uid: string, name: string) {
+  async editUsername(current_uid: string | number, name: string) {
     await this._req.put(BluedApiUrl.editUsername(current_uid), {
       name,
     });
@@ -338,8 +338,8 @@ export class BluedApi {
    * @returns
    */
   async getLiveConsumes(
-    uid: string,
-    lid: string,
+    uid: string | number,
+    lid: string | number,
     page: number = 1
   ): Promise<Consume[]> {
     const { data } = await this._req.get<ConsumesResponse>(
@@ -357,8 +357,8 @@ export class BluedApi {
    * @returns
    */
   async getHistoryConsumes(
-    uid: string,
-    lid: string,
+    uid: string | number,
+    lid: string | number,
     page: number = 1,
     type: ConsumesHistoryType = ConsumesHistoryType.Week
   ): Promise<Consume[]> {
@@ -385,7 +385,7 @@ export class BluedApi {
    * @param lid 直播间ID
    * @returns
    */
-  async syncChat(lid: string): Promise<Chat[]> {
+  async syncChat(lid: string | number): Promise<Chat[]> {
     const { data } = await this._req.get<BluedChatResponse>(
       BluedApiUrl.syncChat(lid)
     );
@@ -407,7 +407,7 @@ export class BluedApi {
    * @param uid 主播ID
    * @returns
    */
-  async getGoodsList(uid: string) {
+  async getGoodsList(uid: string | number) {
     const { data } = await this._req.get<BluedGoodsResponse>(
       BluedApiUrl.goodsList(uid)
     );
@@ -431,8 +431,8 @@ export class BluedApi {
    * @returns
    */
   async sendBlindBox(
-    uid: string,
-    lid: string,
+    uid: string | number,
+    lid: string | number,
     type: BlindBoxType = BlindBoxType.初级宝藏,
     count: number = 1
   ): Promise<{
@@ -479,8 +479,8 @@ export class BluedApi {
    * @returns
    */
   async sendGift(
-    uid: string,
-    lid: string,
+    uid: string | number,
+    lid: string | number,
     gift_name: string = "小熊",
     count: number = 1
   ) {
