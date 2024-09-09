@@ -1,5 +1,5 @@
 import axios, { isAxiosError } from "axios";
-import { enc, AES } from "crypto-js";
+import CryptoJS, { enc, AES } from "crypto-js";
 import cityCode from "./cityCode.json";
 import Hashids from "hashids";
 export { cityCode };
@@ -342,11 +342,11 @@ export class BluedApi {
    * @param keywords 关键字
    * @returns
    */
-  async searchUser(keywords: string): Promise<BluedUser | undefined> {
+  async searchUser(keywords: string): Promise<BluedUser[]> {
     const { data } = await this._req.get(BluedApiUrl.searchUser, {
       params: { keywords },
     });
-    return data?.data?.[0];
+    return data?.data || [];
   }
 
   /**
