@@ -147,6 +147,18 @@ export interface BluedFollowedListResponse {
   }[];
 }
 
+export interface BluedBagListResponse {
+  data: {
+    gifts: {
+      beans: number;
+      goods_id: number;
+      name: string;
+      user_store_count: number;
+      last_time: number;
+    }[];
+  }[];
+}
+
 export class BluedApiUrl {
   /** 送礼物 */
   public static sendGift = "https://pay.blued.cn/buy/goods";
@@ -160,6 +172,8 @@ export class BluedApiUrl {
   public static leaveLive = "https://live.blued.cn/live/leave";
   /** 余额 */
   public static balance = `https://pay.blued.cn/sums/ios`;
+  /** 背包列表 */
+  public static bagList = `https://pay.blued.cn/stock/user-pack`;
   /**
    * 关注列表
    * @param page 页数
@@ -287,6 +301,54 @@ export class BluedApi {
         return Promise.reject(err);
       }
     );
+  }
+
+  async sendBagGift(
+    uid: number | string,
+    lid: number | string,
+    good_name: string,
+    count: number = 1
+  ) {
+    const gifts = await this.getBagList();
+    const good = gifts.find((i) => i.name === good_name);
+    if (!good) {
+      console.log(`未找到 ${good_name}`);
+      return {
+        beans: 0,
+        beans_count: 0,
+        beans_current: 0,
+      };
+    } else {
+      const { data } = await this._req.post(BluedApiUrl.sendGift, {
+        extra: "",
+        target_uid: uid,
+        live_id: lid,
+        count,
+        goods_id: good.goods_id,
+        contents: "",
+        pay_code: "",
+        custom_rank_title: "",
+        from: "followed",
+        only_use_stock: true,
+        hit_id: Date.now(),
+        room_type: 0,
+        mics_uids: [],
+        discount_id: "",
+        is_help_wish_list: false,
+      });
+      return data?.data?.[0];
+    }
+  }
+
+  /**
+   * 获取背包列表
+   * @returns
+   */
+  async getBagList() {
+    const { data } = await this._req.get<BluedBagListResponse>(
+      BluedApiUrl.bagList
+    );
+    return data?.data[0]?.gifts || [];
   }
 
   /**
