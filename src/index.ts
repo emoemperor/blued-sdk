@@ -122,6 +122,14 @@ export interface BluedBalanceResponse {
   data?: balanceData[];
 }
 
+export interface BluedFollowedResponse {
+  data: {
+    uid: number;
+    name: string;
+    last_operate: number;
+  }[];
+}
+
 export interface BluedFollowedListResponse {
   data?: {
     fan_club_level: number;
@@ -174,8 +182,11 @@ export class BluedApiUrl {
   public static balance = `https://pay.blued.cn/sums/ios`;
   /** 背包列表 */
   public static bagList = `https://pay.blued.cn/stock/user-pack`;
+  /** 关注列表 */
+  public static followed = (uid: string | number, page: number = 1) =>
+    `https://social.blued.cn/users/${uid}/followed?page=${page}&sort=default`;
   /**
-   * 关注列表
+   * 关注主播列表
    * @param page 页数
    * @returns
    */
@@ -353,6 +364,19 @@ export class BluedApi {
 
   /**
    * 获取关注列表
+   * @param uid 用户ID
+   * @param page 页数
+   * @returns
+   */
+  async getFollowed(uid: string | number, page: number = 1) {
+    const { data } = await this._req.get<BluedFollowedResponse>(
+      BluedApiUrl.followed(uid, page)
+    );
+    return data?.data || [];
+  }
+
+  /**
+   * 获取关注主播列表
    * @param page 页数
    * @returns
    */
@@ -743,9 +767,18 @@ export class BluedApi {
     }
   }
 
-  public static async getLiveInfoByUid(
-    uid: number | string
-  ): Promise<LiveInfoByUid | undefined> {
+  /**
+   * 获取直播间信息
+   * @param uid 用户ID
+   * @returns
+   */
+  public static async getLiveInfoByUid(uid: number | string): Promise<
+    | {
+        liveInfo: LiveInfoByUid;
+        userInfo: UserInfoByUid;
+      }
+    | undefined
+  > {
     try {
       const isLive = await this.checkIsLive(uid);
       if (!isLive) return undefined;
@@ -762,11 +795,12 @@ export class BluedApi {
         const decodedStr = decodeURIComponent(match[1]);
         // 将解码后的字符串解析为 JSON
         const jsonData = JSON.parse(decodedStr);
-        if ("liveInfo" in jsonData) {
-          return jsonData.liveInfo;
-        } else {
-          return undefined;
+        if ("liveList" in jsonData) {
+          delete jsonData.liveList;
         }
+        return jsonData;
+      } else {
+        return undefined;
       }
     } catch (error) {
       console.error("Error parsing JSON:", error);
@@ -775,8 +809,20 @@ export class BluedApi {
   }
 }
 
+export interface UserInfoByUid {
+  avatar: string;
+  live: number;
+  name: string;
+  onLive: boolean;
+  // 加密uid
+  uid: string;
+}
+
 export interface LiveInfoByUid {
   liveUrl: string;
   picUrl: string;
   initTime: string;
+  liked: string;
+  totalWatch: string;
+  togetherWatch: string;
 }
