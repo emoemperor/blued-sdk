@@ -17,6 +17,11 @@ export enum UserRole {
   "Tp",
   "Vers",
 }
+export enum MuteOperationType {
+  解除禁言 = 0,
+  本场禁言 = 1,
+  永久禁言 = 2,
+}
 export interface BluedUser {
   anchor: number;
   avatar: string;
@@ -168,6 +173,11 @@ export interface BluedBagListResponse {
 }
 
 export class BluedApiUrl {
+  /** 禁言用户 */
+  public static muteUser = "https://live.blued.cn/live/chatroom/operate/mute";
+  /** 踢出用户 */
+  public static kickOutUser =
+    "https://live.blued.cn/live/chatroom/operate/kick-out";
   /** 送礼物 */
   public static sendGift = "https://pay.blued.cn/buy/goods";
   /** 送盲盒 */
@@ -264,6 +274,7 @@ export class BluedApiUrl {
 
 export class BluedApi {
   private _req = axios.create({
+    timeout: 30 * 1000,
     headers: {
       channel: "apple",
       "Content-Type": "application/json",
@@ -312,6 +323,36 @@ export class BluedApi {
         return Promise.reject(err);
       }
     );
+  }
+
+  /**
+   * 禁言用户
+   * @param uid 用户ID
+   * @param lid 直播间ID
+   * @param type 禁言操作类型
+   */
+  async muteUser(
+    uid: number | string,
+    lid: number | string,
+    type: MuteOperationType = MuteOperationType.永久禁言
+  ) {
+    await this._req.post(BluedApiUrl.muteUser, {
+      uid,
+      lid,
+      type,
+    });
+  }
+
+  /**
+   * 踢出用户
+   * @param uid 用户ID
+   * @param lid 直播间ID
+   */
+  async kickOutUser(uid: number | string, lid: number | string) {
+    await this._req.post(BluedApiUrl.kickOutUser, {
+      uid,
+      lid,
+    });
   }
 
   async sendBagGift(
@@ -368,9 +409,10 @@ export class BluedApi {
    * @param page 页数
    * @returns
    */
-  async getFollowed(uid: string | number, page: number = 1) {
+  async getFollowed(page: number = 1) {
+    const { enc_uid } = await this.checkBalance();
     const { data } = await this._req.get<BluedFollowedResponse>(
-      BluedApiUrl.followed(uid, page)
+      BluedApiUrl.followed(BluedApi.decryptUid(enc_uid), page)
     );
     return data?.data || [];
   }
@@ -389,13 +431,16 @@ export class BluedApi {
 
   /**
    * 修改用户名
-   * @param current_uid 当前用户ID
    * @param name 需要修改的用户名
    */
-  async editUsername(current_uid: string | number, name: string) {
-    await this._req.put(BluedApiUrl.editUsername(current_uid), {
-      name,
-    });
+  async editUsername(name: string) {
+    const { enc_uid } = await this.checkBalance();
+    await this._req.put(
+      BluedApiUrl.editUsername(BluedApi.decryptUid(enc_uid)),
+      {
+        name,
+      }
+    );
   }
 
   /**
@@ -772,16 +817,16 @@ export class BluedApi {
    * @param uid 用户ID
    * @returns
    */
-  public static async getLiveInfoByUid(uid: number | string): Promise<
+  public static async getInfoByUid(uid: number | string): Promise<
     | {
-        liveInfo: LiveInfoByUid;
+        liveInfo: LiveInfoByUid | null;
         userInfo: UserInfoByUid;
       }
     | undefined
   > {
     try {
-      const isLive = await this.checkIsLive(uid);
-      if (!isLive) return undefined;
+      // const isLive = await this.checkIsLive(uid);
+      // if (!isLive) return undefined;
       const { data } = await axios.get(
         `https://app.blued.cn/live?id=${this.encryptUid(uid)}`
       );
